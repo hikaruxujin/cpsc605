@@ -1,0 +1,36 @@
+CXX = g++
+
+# Warnings frequently signal eventual errors:
+CXXFLAGS=`sdl-config --cflags` -g -W -Wall -Weffc++ -Wextra -pedantic -O0
+
+ifeq ("$(shell uname)", "Darwin")
+  LDFLAGS =
+else
+  ifeq ("$(shell uname)", "Linux")
+  LDFLAGS = `sdl-config --libs` -lm -lSDL_ttf -lSDL_image -lexpat
+  endif
+endif
+
+OBJS = \
+	
+
+EXEC = run
+
+# $< refers to the first dependency
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# $@ refers to the target
+$(EXEC): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+main.o: main.cpp controller.h
+controller.o: controller.cpp controller.h model.h
+model.o: model.cpp model.h sprite.h
+frame.o: frame.cpp frame.h
+parseXML.o: parseXML.cpp parseXML.h
+sprite.o: sprite.cpp sprite.h frame.h drawable.h
+
+clean:
+	rm -rf $(OBJS)
+	rm -rf $(EXEC)
