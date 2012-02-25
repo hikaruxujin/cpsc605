@@ -266,10 +266,10 @@ GLuint set_shaders()
 
     v = glCreateShader(GL_VERTEX_SHADER);
     f = glCreateShader(GL_FRAGMENT_SHADER);
-    //~ vs = read_shader_program("phong.vert");
-    //~ fs = read_shader_program("phong.frag");
-    vs = read_shader_program("blinn.vert");
-    fs = read_shader_program("blinn.frag");
+    vs = read_shader_program("phong.vert");
+    fs = read_shader_program("phong.frag");
+    //~ vs = read_shader_program("blinn.vert");
+    //~ fs = read_shader_program("blinn.frag");
     printf("%s\n",vs);
     printf("%s\n",fs);
     glShaderSource(v,1,(const char **)&vs,NULL);
@@ -354,7 +354,7 @@ void draw_stuff()
     bunny.Draw();
     glPopMatrix();
     
-    //glutSolidTorus(0.4,0.8,128,128);
+    //~ glutSolidTorus(0.4,0.8,128,128);
     
     glutSwapBuffers();
 }
@@ -385,8 +385,8 @@ void do_keylights(){
 
 void do_filllights(){
     float light1_ambient[] = {0.0,0.0,0.0,0.0};
-    float light1_diffuse[] = {0.3,0.3,0.3,0.0};
-    float light1_specular[] = {0.2,0.2,0.2,0.0};
+    float light1_diffuse[] = {0.1,0.1,0.1,0.0};
+    float light1_specular[] = {0.1,0.1,0.1,0.0};
     float light1_position[] = {1.0,0.5,2.0,1.0};
     float light1_direction[] = {-1.0,-0.5,-2.0,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light1_ambient);
@@ -398,7 +398,7 @@ void do_filllights(){
     glLightfv(GL_LIGHT1,GL_SPECULAR,light1_specular);
     glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,1.0);
     glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,3.5);
+    glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,3.0);
     glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.01);
     glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.01);
     glLightfv(GL_LIGHT1,GL_POSITION,light1_position);
@@ -409,8 +409,8 @@ void do_filllights(){
 
 void do_backlights(){
     float light2_ambient[] = {0.0,0.0,0.0,0.0};
-    float light2_diffuse[] = {0.3,0.3,0.3,0.0};
-    float light2_specular[] = {0.2,0.2,0.2,0.0};
+    float light2_diffuse[] = {0.1,0.1,0.1,0.0};
+    float light2_specular[] = {0.1,0.1,0.1,0.0};
     float light2_position[] = {0.0,1.0,-1.0,1.0};
     float light2_direction[] = {0.0,-1.0,1.0,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light2_ambient);
@@ -420,9 +420,9 @@ void do_backlights(){
     glLightfv(GL_LIGHT2,GL_AMBIENT,light2_ambient);
     glLightfv(GL_LIGHT2,GL_DIFFUSE,light2_diffuse);
     glLightfv(GL_LIGHT2,GL_SPECULAR,light2_specular);
-    glLightf(GL_LIGHT2,GL_SPOT_EXPONENT,2.5);
+    glLightf(GL_LIGHT2,GL_SPOT_EXPONENT,1.0);
     glLightf(GL_LIGHT2,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT2,GL_CONSTANT_ATTENUATION,1.0);
+    glLightf(GL_LIGHT2,GL_CONSTANT_ATTENUATION,0.7);
     glLightf(GL_LIGHT2,GL_LINEAR_ATTENUATION,0.01);
     glLightf(GL_LIGHT2,GL_QUADRATIC_ATTENUATION,0.01);
     glLightfv(GL_LIGHT2,GL_POSITION,light2_position);
@@ -437,7 +437,7 @@ void do_material(){
     float mat_ambient[] = {0.0,0.0,0.0,0.0};
     float mat_diffuse[] = {0.5,0.5,0.0,1.0};
     float mat_specular[] = {1.0,1.0,1.0,1.0};
-    float mat_shininess[] = {14.0};
+    float mat_shininess[] = {5.0};
 
     glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
     glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
@@ -457,9 +457,9 @@ int main(int argc,char** argv)
     setup_the_viewlolume();
     //do_keylights();
     //do_filllights();
-    //do_backlights();
+    do_backlights();
     do_material();
-    set_shaders();
+    //set_shaders();
     glutDisplayFunc(draw_stuff);
     glutMainLoop();
     return 0;
