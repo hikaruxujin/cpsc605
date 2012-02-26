@@ -1,6 +1,6 @@
 
-CXX = g++
-#CXX = clang
+#CXX = g++
+CXX = clang++
 
 # Warnings frequently signal eventual errors:
 CXXFLAGS= -g -W -Wall -Weffc++ -Wextra -pedantic -O0 

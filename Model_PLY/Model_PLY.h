@@ -14,6 +14,8 @@
 #include <string.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/glut.h>
+#include <malloc.h>
 #include <cmath>
 #include <string>
  
@@ -21,30 +23,42 @@
 class Model_PLY 
 {
 public:
-	int Model_PLY::Load(char *filename);
-	void Model_PLY::Draw();
-	float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 );
+	int Load(char *filename);
+	void Draw();
+	float* calculateNormal( float *coord1, float *coord2, float *coord3 );
 	Model_PLY();
- 
-    float* Faces_Triangles;
-    float* Faces_Quads;
-	float* Vertex_Buffer;
+	
+	~Model_PLY()
+	{
+		free(Triangles);
+		free(Vertices);
+		free(Normals);
+		printf("free model\n");
+	}
+ private:
+    float* Triangles;
+	float* Vertices;
 	float* Normals;
  
-	int TotalConnectedTriangles;	
-	int TotalConnectedQuads;	
 	int TotalConnectedPoints;
 	int TotalFaces;
- 
+	Model_PLY(const Model_PLY&);
+	Model_PLY& operator=(const Model_PLY&);
  
 };
  
  
  
-Model_PLY::Model_PLY()
+Model_PLY::Model_PLY():
+	Triangles(NULL),
+	Vertices(NULL),
+	Normals(NULL),
+	TotalConnectedPoints(0),
+	TotalFaces(0)
 {
  
 }
+
  
  
 float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
@@ -80,38 +94,20 @@ float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
  
 int Model_PLY::Load(char* filename)
 {
-    this->TotalConnectedTriangles = 0; 
-	this->TotalConnectedQuads = 0;
+
 	this->TotalConnectedPoints = 0;
+	this->TotalFaces = 0;
  
     char* pch = strstr(filename,".ply");
  
     if (pch != NULL)
     {
-	   FILE* file = fopen(filename,"r");
+		//open file
+		FILE* file = fopen(filename,"r");
  
-		fseek(file,0,SEEK_END);
-		long fileSize = ftell(file);
- 
-		try
+		if (file)
 		{
-		Vertex_Buffer = (float*) malloc (ftell(file));
-		}
-		catch (char* )
-		{
-			return -1;
-		}
-		if (Vertex_Buffer == NULL) return -1;
-		fseek(file,0,SEEK_SET); 
- 
-	   Faces_Triangles = (float*) malloc(fileSize*sizeof(float));
-	   Normals  = (float*) malloc(fileSize*sizeof(float));
- 
-       if (file)
-       {
 			int i = 0;   
-			int temp = 0;
-			int quads_index = 0;
             int triangle_index = 0;
 			int normal_index = 0;
 			char buffer[1000];
@@ -149,7 +145,9 @@ int Model_PLY::Load(char* filename)
 			}
  
 			//----------------------
- 
+			Vertices = (float*) malloc (3*TotalConnectedPoints*sizeof(float));
+			Triangles = (float*) malloc(9*TotalFaces*sizeof(float));
+			Normals  = (float*) malloc(9*TotalFaces*sizeof(float));
  
 			// read verteces
 			i =0;
@@ -157,7 +155,7 @@ int Model_PLY::Load(char* filename)
 			{
 				fgets(buffer,300,file);
  
-				sscanf(buffer,"%f %f %f", &Vertex_Buffer[i], &Vertex_Buffer[i+1], &Vertex_Buffer[i+2]);
+				sscanf(buffer,"%f %f %f", &Vertices[i], &Vertices[i+1], &Vertices[i+2]);
 				i += 3;
 			}
  
@@ -174,27 +172,22 @@ int Model_PLY::Load(char* filename)
 						//sscanf(buffer,"%i%i%i\n", vertex1,vertex2,vertex3 );
 						buffer[0] = ' ';
 						sscanf(buffer,"%i%i%i", &vertex1,&vertex2,&vertex3 );
-						/*vertex1 -= 1;
-						vertex2 -= 1;
-						vertex3 -= 1;
-*/
-						//  vertex == punt van vertex lijst
-						// vertex_buffer -> xyz xyz xyz xyz
-						printf("%f %f %f ", Vertex_Buffer[3*vertex1], Vertex_Buffer[3*vertex1+1], Vertex_Buffer[3*vertex1+2]);
+						
+						//printf("%f %f %f ", Vertices[3*vertex1], Vertices[3*vertex1+1], Vertices[3*vertex1+2]);
  
-						Faces_Triangles[triangle_index] = Vertex_Buffer[3*vertex1];
-						Faces_Triangles[triangle_index+1] = Vertex_Buffer[3*vertex1+1];
-						Faces_Triangles[triangle_index+2] = Vertex_Buffer[3*vertex1+2];
-						Faces_Triangles[triangle_index+3] = Vertex_Buffer[3*vertex2];
-						Faces_Triangles[triangle_index+4] = Vertex_Buffer[3*vertex2+1];
-						Faces_Triangles[triangle_index+5] = Vertex_Buffer[3*vertex2+2];
-						Faces_Triangles[triangle_index+6] = Vertex_Buffer[3*vertex3];
-						Faces_Triangles[triangle_index+7] = Vertex_Buffer[3*vertex3+1];
-						Faces_Triangles[triangle_index+8] = Vertex_Buffer[3*vertex3+2];
+						Triangles[triangle_index] = Vertices[3*vertex1];
+						Triangles[triangle_index+1] = Vertices[3*vertex1+1];
+						Triangles[triangle_index+2] = Vertices[3*vertex1+2];
+						Triangles[triangle_index+3] = Vertices[3*vertex2];
+						Triangles[triangle_index+4] = Vertices[3*vertex2+1];
+						Triangles[triangle_index+5] = Vertices[3*vertex2+2];
+						Triangles[triangle_index+6] = Vertices[3*vertex3];
+						Triangles[triangle_index+7] = Vertices[3*vertex3+1];
+						Triangles[triangle_index+8] = Vertices[3*vertex3+2];
  
-						float coord1[3] = { Faces_Triangles[triangle_index], Faces_Triangles[triangle_index+1],Faces_Triangles[triangle_index+2]};
-						float coord2[3] = {Faces_Triangles[triangle_index+3],Faces_Triangles[triangle_index+4],Faces_Triangles[triangle_index+5]};
-						float coord3[3] = {Faces_Triangles[triangle_index+6],Faces_Triangles[triangle_index+7],Faces_Triangles[triangle_index+8]};
+						float coord1[3] = { Triangles[triangle_index], Triangles[triangle_index+1],Triangles[triangle_index+2]};
+						float coord2[3] = {Triangles[triangle_index+3],Triangles[triangle_index+4],Triangles[triangle_index+5]};
+						float coord3[3] = {Triangles[triangle_index+6],Triangles[triangle_index+7],Triangles[triangle_index+8]};
 						float *norm = this->calculateNormal( coord1, coord2, coord3 );
  
 						Normals[normal_index] = norm[0];
@@ -210,7 +203,6 @@ int Model_PLY::Load(char* filename)
 						normal_index += 9;
  
 						triangle_index += 9;
-						TotalConnectedTriangles += 3;
 					}
  
  
@@ -219,9 +211,8 @@ int Model_PLY::Load(char* filename)
  
  
 			fclose(file);
+		} else { printf("File can't be opened\n"); 
 		}
- 
-      else { printf("File can't be opened\n"); }
     } else {
       printf("File does not have a .PLY extension. ");    
     }   
@@ -230,13 +221,12 @@ int Model_PLY::Load(char* filename)
  
 void Model_PLY::Draw()
 {
-	//glEnableClientState(GL_VERTEX_ARRAY);	
- 	//glEnableClientState(GL_NORMAL_ARRAY);
-	//glVertexPointer(3,GL_FLOAT,	0,Faces_Triangles);	
-	//glNormalPointer(GL_FLOAT, 0, Normals);
-	//glDrawArrays(GL_TRIANGLES, 0, TotalConnectedTriangles);	
-	//glDisableClientState(GL_VERTEX_ARRAY);    
-	//glDisableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);	
+ 	glEnableClientState(GL_NORMAL_ARRAY);
+	glVertexPointer(3,GL_FLOAT,	0,Triangles);	
+	glNormalPointer(GL_FLOAT, 0, Normals);
+	glDrawArrays(GL_TRIANGLES, 0, 3*TotalFaces);	
+	glDisableClientState(GL_VERTEX_ARRAY);    
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
-
 #endif

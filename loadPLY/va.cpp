@@ -8,12 +8,18 @@
 #include <string>
  
  
+struct normal{
+	 float x;
+	 float y;
+	 float z;
+};
+ 
 class Model_PLY 
 {
 public:
-	int Load(char *filename);
+	int Load(const char *filename);
 	void Draw();
-	float* calculateNormal( float *coord1, float *coord2, float *coord3 );
+	normal calculateNormal( float *coord1, float *coord2, float *coord3 );
 	Model_PLY();
 	
 	~Model_PLY()
@@ -49,7 +55,7 @@ Model_PLY::Model_PLY():
 
  
  
-float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
+normal Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
 {
    /* calculate Vector1 and Vector2 */
    float va[3], vb[3], vr[3], val;
@@ -69,10 +75,10 @@ float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
    /* normalization factor */
    val = sqrt( vr[0]*vr[0] + vr[1]*vr[1] + vr[2]*vr[2] );
  
-	float norm[3];
-	norm[0] = vr[0]/val;
-	norm[1] = vr[1]/val;
-	norm[2] = vr[2]/val;
+	normal norm;
+	norm.x = vr[0]/val;
+	norm.y = vr[1]/val;
+	norm.z = vr[2]/val;
  
  
 	return norm;
@@ -80,7 +86,7 @@ float* Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3 )
  
  
  
-int Model_PLY::Load(char* filename)
+int Model_PLY::Load(const char* filename)
 {
 
 	this->TotalConnectedPoints = 0;
@@ -176,17 +182,17 @@ int Model_PLY::Load(char* filename)
 						float coord1[3] = { Triangles[triangle_index], Triangles[triangle_index+1],Triangles[triangle_index+2]};
 						float coord2[3] = {Triangles[triangle_index+3],Triangles[triangle_index+4],Triangles[triangle_index+5]};
 						float coord3[3] = {Triangles[triangle_index+6],Triangles[triangle_index+7],Triangles[triangle_index+8]};
-						float *norm = this->calculateNormal( coord1, coord2, coord3 );
+						normal norm = this->calculateNormal( coord1, coord2, coord3 );
  
-						Normals[normal_index] = norm[0];
-						Normals[normal_index+1] = norm[1];
-						Normals[normal_index+2] = norm[2];
-						Normals[normal_index+3] = norm[0];
-						Normals[normal_index+4] = norm[1];
-						Normals[normal_index+5] = norm[2];
-						Normals[normal_index+6] = norm[0];
-						Normals[normal_index+7] = norm[1];
-						Normals[normal_index+8] = norm[2];
+						Normals[normal_index] = norm.x;
+						Normals[normal_index+1] = norm.y;
+						Normals[normal_index+2] = norm.z;
+						Normals[normal_index+3] = norm.x;
+						Normals[normal_index+4] = norm.y;
+						Normals[normal_index+5] = norm.z;
+						Normals[normal_index+6] = norm.x;
+						Normals[normal_index+7] = norm.y;
+						Normals[normal_index+8] = norm.z;
  
 						normal_index += 9;
  
@@ -236,7 +242,7 @@ void setup_the_viewlolume(){
 
 	eye.x = 0.0;
 	eye.y = 0.0;
-	eye.z = 0.4;
+	eye.z = 0.3;
 
 	view.x = 0.0;
 	view.y = 0.0;
@@ -257,10 +263,31 @@ void draw_stuff()
     
     //bunny
     Model_PLY bunny;
-    glPushMatrix();
-    glTranslatef(0.0,-0.1,0.0);
-    char* filename = "bunny.ply";
+    
+    const char* filename = "bunny.ply";
+    //char* filename = "dragon.ply";
+    //char* filename = "blade.ply";
+    //char* filename = "happy.ply";
+    //char* filename = "hand.ply";
     bunny.Load(filename);
+    //glPushMatrix();
+    //glTranslatef(-0.2,0.1,0.0);
+    //bunny.Draw();
+    //glPopMatrix();
+    //glPushMatrix();
+    //glTranslatef(0.2,0.1,0.0);
+    //bunny.Draw();
+    //glPopMatrix();
+    //glPushMatrix();
+    //glTranslatef(0.2,-0.3,0.0);
+    //bunny.Draw();
+    //glPopMatrix();
+    //glPushMatrix();
+    //glTranslatef(-0.2,-0.3,0.0);
+    //bunny.Draw();
+    //glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.03,-0.1,0.0);
     bunny.Draw();
     glPopMatrix();
     glFlush();
