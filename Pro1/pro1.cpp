@@ -10,235 +10,8 @@
 #include <cmath>
 #include <string>
 #include <fcntl.h>
- 
-//plyModel begin
-struct normal{
-	 float x;
-	 float y;
-	 float z;
-};
- 
-class plyModel 
-{
-public:
-	int Load(const char *filename);
-	void Draw();
-	normal calculateNormal( float *coord1, float *coord2, float *coord3 );
-	plyModel();
-	plyModel(const char* filename);
-	
-	~plyModel()
-	{
-		free(Triangles);
-		free(Vertices);
-		free(Normals);
-		printf("free model\n");
-	}
- private:
-    float* Triangles;
-	float* Vertices;
-	float* Normals;
- 
-	int TotalConnectedPoints;
-	int TotalFaces;
-	plyModel(const plyModel&);
-	plyModel& operator=(const plyModel&);
- 
-};
- 
- 
- 
-plyModel::plyModel():
-	Triangles(NULL),
-	Vertices(NULL),
-	Normals(NULL),
-	TotalConnectedPoints(0),
-	TotalFaces(0)
-{
-	
-}
+#include "plyModel.h"
 
-plyModel::plyModel(const char* filename):
-	Triangles(NULL),
-	Vertices(NULL),
-	Normals(NULL),
-	TotalConnectedPoints(0),
-	TotalFaces(0)
-{
-    Load(filename);
-}
-
- 
- 
-normal plyModel::calculateNormal( float *coord1, float *coord2, float *coord3 )
-{
-   /* calculate Vector1 and Vector2 */
-   float va[3], vb[3], vr[3], val;
-   va[0] = coord1[0] - coord2[0];
-   va[1] = coord1[1] - coord2[1];
-   va[2] = coord1[2] - coord2[2];
- 
-   vb[0] = coord1[0] - coord3[0];
-   vb[1] = coord1[1] - coord3[1];
-   vb[2] = coord1[2] - coord3[2];
- 
-   /* cross product */
-   vr[0] = va[1] * vb[2] - vb[1] * va[2];
-   vr[1] = vb[0] * va[2] - va[0] * vb[2];
-   vr[2] = va[0] * vb[1] - vb[0] * va[1];
- 
-   /* normalization factor */
-   val = sqrt( vr[0]*vr[0] + vr[1]*vr[1] + vr[2]*vr[2] );
- 
-	normal norm;
-	norm.x = vr[0]/val;
-	norm.y = vr[1]/val;
-	norm.z = vr[2]/val;
- 
- 
-	return norm;
-}
- 
- 
- 
-int plyModel::Load(const char* filename)
-{
-
-	this->TotalConnectedPoints = 0;
-	this->TotalFaces = 0;
- 
-    const char* pch = strstr(filename,".ply");
- 
-    if (pch != NULL)
-    {
-		//open file
-		FILE* file = fopen(filename,"r");
- 
-		if (file)
-		{
-			int i = 0;   
-            int triangle_index = 0;
-			int normal_index = 0;
-			char buffer[1000];
- 
- 
-			fgets(buffer,300,file);			// ply
- 
- 
-			// READ HEADER
-			// -----------------
- 
-			// Find number of vertexes
-			while (  strncmp( "element vertex", buffer,strlen("element vertex")) != 0  )
-			{
-				fgets(buffer,300,file);			// format
-			}
-			strcpy(buffer, buffer+strlen("element vertex"));
-			sscanf(buffer,"%i", &this->TotalConnectedPoints);
- 
- 
-			// Find number of vertexes
-			fseek(file,0,SEEK_SET);
-			while (  strncmp( "element face", buffer,strlen("element face")) != 0  )
-			{
-				fgets(buffer,300,file);			// format
-			}
-			strcpy(buffer, buffer+strlen("element face"));
-			sscanf(buffer,"%i", &this->TotalFaces);
- 
- 
-			// go to end_header
-			while (  strncmp( "end_header", buffer,strlen("end_header")) != 0  )
-			{
-				fgets(buffer,300,file);			// format
-			}
- 
-			//----------------------
-			Vertices = (float*) malloc (3*TotalConnectedPoints*sizeof(float));
-			Triangles = (float*) malloc(9*TotalFaces*sizeof(float));
-			Normals  = (float*) malloc(9*TotalFaces*sizeof(float));
- 
-			// read verteces
-			i =0;
-			for (int iterator = 0; iterator < this->TotalConnectedPoints; iterator++)
-			{
-				fgets(buffer,300,file);
- 
-				sscanf(buffer,"%f %f %f", &Vertices[i], &Vertices[i+1], &Vertices[i+2]);
-				i += 3;
-			}
- 
-			// read faces
-			i =0;
-			for (int iterator = 0; iterator < this->TotalFaces; iterator++)
-			{
-				fgets(buffer,300,file);
- 
-					if (buffer[0] == '3')
-					{
- 
-						int vertex1 = 0, vertex2 = 0, vertex3 = 0;
-						//sscanf(buffer,"%i%i%i\n", vertex1,vertex2,vertex3 );
-						buffer[0] = ' ';
-						sscanf(buffer,"%i%i%i", &vertex1,&vertex2,&vertex3 );
-						
-						//printf("%f %f %f ", Vertices[3*vertex1], Vertices[3*vertex1+1], Vertices[3*vertex1+2]);
- 
-						Triangles[triangle_index] = Vertices[3*vertex1];
-						Triangles[triangle_index+1] = Vertices[3*vertex1+1];
-						Triangles[triangle_index+2] = Vertices[3*vertex1+2];
-						Triangles[triangle_index+3] = Vertices[3*vertex2];
-						Triangles[triangle_index+4] = Vertices[3*vertex2+1];
-						Triangles[triangle_index+5] = Vertices[3*vertex2+2];
-						Triangles[triangle_index+6] = Vertices[3*vertex3];
-						Triangles[triangle_index+7] = Vertices[3*vertex3+1];
-						Triangles[triangle_index+8] = Vertices[3*vertex3+2];
- 
-						float coord1[3] = { Triangles[triangle_index], Triangles[triangle_index+1],Triangles[triangle_index+2]};
-						float coord2[3] = {Triangles[triangle_index+3],Triangles[triangle_index+4],Triangles[triangle_index+5]};
-						float coord3[3] = {Triangles[triangle_index+6],Triangles[triangle_index+7],Triangles[triangle_index+8]};
-						normal norm = this->calculateNormal( coord1, coord2, coord3 );
- 
-						Normals[normal_index] = norm.x;
-						Normals[normal_index+1] = norm.y;
-						Normals[normal_index+2] = norm.z;
-						Normals[normal_index+3] = norm.x;
-						Normals[normal_index+4] = norm.y;
-						Normals[normal_index+5] = norm.z;
-						Normals[normal_index+6] = norm.x;
-						Normals[normal_index+7] = norm.y;
-						Normals[normal_index+8] = norm.z;
- 
-						normal_index += 9;
- 
-						triangle_index += 9;
-					}
- 
- 
-					i += 3;
-			}
- 
- 
-			fclose(file);
-		} else { printf("File can't be opened\n"); 
-		}
-    } else {
-      printf("File does not have a .PLY extension. ");    
-    }   
-	return 0;
-}
- 
-void plyModel::Draw()
-{
-	glEnableClientState(GL_VERTEX_ARRAY);	
- 	glEnableClientState(GL_NORMAL_ARRAY);
-	glVertexPointer(3,GL_FLOAT,	0,Triangles);	
-	glNormalPointer(GL_FLOAT, 0, Normals);
-	glDrawArrays(GL_TRIANGLES, 0, 3*TotalFaces);	
-	glDisableClientState(GL_VERTEX_ARRAY);    
-	glDisableClientState(GL_NORMAL_ARRAY);
-}
-//plyModel end
 
 
 //glsl begin
@@ -293,8 +66,16 @@ struct point {
 	float x,y,z;
 };
 
-void setup_the_viewlolume(){
-	struct point eye, view, up;
+struct point eye = {0.0,0.0,0.4};
+struct point view = {0.0,0.0,0.0};
+struct point up = {0.0,1.0,0.0};
+
+float angleH = 0.0;
+float angleV = 0.0;
+#define PI 3.14159265
+
+void setup_the_viewvolume(){
+	
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -303,20 +84,160 @@ void setup_the_viewlolume(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	eye.x = 0.0;
-	eye.y = 0.0;
-	eye.z = 0.4;
 
-	view.x = 0.0;
-	view.y = 0.0;
-	view.z = 0.0;
-
-	up.x = 0.0;
-	up.y = 1.0;
-	up.z = 0.0;
 
 	gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
 
+}
+
+
+void key(unsigned char key, int x, int y)
+{
+  if (key == '\033')
+    exit(0);
+    if(key == ' ')
+  {
+	  angleH = 0.0;
+	  angleV = 0.0;
+	  eye.z = 0.4*cos(angleH);
+	  eye.x = 0.4*sin(angleH);
+	  eye.y = 0.4*sin(angleV);
+	  glutPostRedisplay();
+  }
+  printf("%c %d %d\n",key,x,y);
+}
+
+void skey(int key, int x, int y)
+{
+  if (key == GLUT_KEY_LEFT)
+  {
+	  angleH += 0.1;
+	  if(angleH > 2 * PI)
+	  {
+		  angleH = 0.0;
+	  }
+	  eye.z =0.4*cos(angleH);
+	  eye.x =0.4*sin(angleH);
+	  glutPostRedisplay();
+  }
+  if(key == GLUT_KEY_RIGHT)
+  {
+	  angleH -= 0.1;
+	  if(angleH < 0.0)
+	  {
+		  angleH = 2 * PI;
+	  }
+	  eye.z =0.4*cos(angleH);
+	  eye.x =0.4*sin(angleH);
+	  glutPostRedisplay();
+  }
+  if(key == GLUT_KEY_UP)
+  {
+	  angleV += 0.1;
+	  if(angleV > 2 * PI)
+	  {
+		  angleV = 0.0;
+	  }
+	  eye.y =0.4*sin(angleV);
+	  glutPostRedisplay();
+  }
+    if(key == GLUT_KEY_DOWN)
+  {
+	  angleV -= 0.1;
+	  if(angleV < 0.0)
+	  {
+		  angleV = 2 * PI;
+	  }
+	  eye.y =0.4*sin(angleV);
+	  glutPostRedisplay();
+  }
+  printf("%d %d %d\n",key,x,y);
+}
+
+void do_keylights(){
+    float light0_ambient[] = {0.0,0.0,0.0,0.0};
+    float light0_diffuse[] = {0.8,0.8,0.8,0.0};
+    float light0_specular[] = {0.8,0.8,0.8,0.0};
+    float light0_position[] = {-2.0,2.0,2.0,1.0};
+    float light0_direction[] = {2.0,-2.0,-2.0,1.0};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light0_ambient);
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+
+    glLightfv(GL_LIGHT0,GL_AMBIENT,light0_ambient);
+    glLightfv(GL_LIGHT0,GL_DIFFUSE,light0_diffuse);
+    glLightfv(GL_LIGHT0,GL_SPECULAR,light0_specular);
+    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,1.0);
+    glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180.0);
+    glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);
+    glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.01);
+    glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.01);
+    glLightfv(GL_LIGHT0,GL_POSITION,light0_position);
+    glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,light0_direction);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+}
+
+void do_filllights(){
+    float light1_ambient[] = {0.0,0.0,0.0,0.0};
+    float light1_diffuse[] = {0.4,0.4,0.4,0.0};
+    float light1_specular[] = {0.4,0.4,0.4,0.0};
+    float light1_position[] = {2.0,0.0,2.0,1.0};
+    float light1_direction[] = {2.0,0.0,-2.0,1.0};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light1_ambient);
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+
+    glLightfv(GL_LIGHT1,GL_AMBIENT,light1_ambient);
+    glLightfv(GL_LIGHT1,GL_DIFFUSE,light1_diffuse);
+    glLightfv(GL_LIGHT1,GL_SPECULAR,light1_specular);
+    glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,1.0);
+    glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,180.0);
+    glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,3.5);
+    glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.01);
+    glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.01);
+    glLightfv(GL_LIGHT1,GL_POSITION,light1_position);
+    glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION,light1_direction);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT1);
+}
+
+void do_backlights(){
+    float light2_ambient[] = {0.0,0.0,0.0,0.0};
+    float light2_diffuse[] = {0.3,0.3,0.3,0.0};
+    float light2_specular[] = {0.3,0.3,0.3,0.0};
+    float light2_position[] = {0.0,3.0,-3.0,1.0};
+    float light2_direction[] = {0.0,-2.0,2.0,1.0};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light2_ambient);
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+
+    glLightfv(GL_LIGHT2,GL_AMBIENT,light2_ambient);
+    glLightfv(GL_LIGHT2,GL_DIFFUSE,light2_diffuse);
+    glLightfv(GL_LIGHT2,GL_SPECULAR,light2_specular);
+    glLightf(GL_LIGHT2,GL_SPOT_EXPONENT,2.5);
+    glLightf(GL_LIGHT2,GL_SPOT_CUTOFF,180.0);
+    glLightf(GL_LIGHT2,GL_CONSTANT_ATTENUATION,1.0);
+    glLightf(GL_LIGHT2,GL_LINEAR_ATTENUATION,0.01);
+    glLightf(GL_LIGHT2,GL_QUADRATIC_ATTENUATION,0.01);
+    glLightfv(GL_LIGHT2,GL_POSITION,light2_position);
+    glLightfv(GL_LIGHT2,GL_SPOT_DIRECTION,light2_direction);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT2);
+}
+
+
+
+void do_material(){	
+    float mat_ambient[] = {0.0,0.0,0.0,0.0};
+    float mat_diffuse[] = {1.0,0.8,0.0,1.0};
+    float mat_specular[] = {1.0,1.0,1.0,1.0};
+    float mat_shininess[] = {14.0};
+
+    glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
+    glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
+    glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
+    glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
 }
 
 //load plyModel
@@ -329,7 +250,15 @@ plyModel bunny(filename);
 
 void draw_stuff()
 {
-
+	glClearColor(0.0,0.0,0.0,0.0);
+    glEnable(GL_DEPTH_TEST);
+    
+	setup_the_viewvolume();
+	do_keylights();
+    do_filllights();
+    do_backlights();
+    do_material();
+    
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
     //glPushMatrix();
@@ -359,92 +288,6 @@ void draw_stuff()
     glutSwapBuffers();
 }
 
-void do_keylights(){
-    float light0_ambient[] = {0.0,0.0,0.0,0.0};
-    float light0_diffuse[] = {0.8,0.8,0.8,0.0};
-    float light0_specular[] = {0.5,0.5,0.5,0.0};
-    float light0_position[] = {-1.0,1.0,2.0,1.0};
-    float light0_direction[] = {1.0,-1.0,-2.0,1.0};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light0_ambient);
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
-
-    glLightfv(GL_LIGHT0,GL_AMBIENT,light0_ambient);
-    glLightfv(GL_LIGHT0,GL_DIFFUSE,light0_diffuse);
-    glLightfv(GL_LIGHT0,GL_SPECULAR,light0_specular);
-    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,1.0);
-    glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);
-    glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.01);
-    glLightfv(GL_LIGHT0,GL_POSITION,light0_position);
-    glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,light0_direction);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-}
-
-void do_filllights(){
-    float light1_ambient[] = {0.0,0.0,0.0,0.0};
-    float light1_diffuse[] = {0.3,0.3,0.3,0.0};
-    float light1_specular[] = {0.2,0.2,0.2,0.0};
-    float light1_position[] = {1.0,0.5,2.0,1.0};
-    float light1_direction[] = {-1.0,-0.5,-2.0,1.0};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light1_ambient);
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
-
-    glLightfv(GL_LIGHT1,GL_AMBIENT,light1_ambient);
-    glLightfv(GL_LIGHT1,GL_DIFFUSE,light1_diffuse);
-    glLightfv(GL_LIGHT1,GL_SPECULAR,light1_specular);
-    glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,1.0);
-    glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,3.5);
-    glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.01);
-    glLightfv(GL_LIGHT1,GL_POSITION,light1_position);
-    glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION,light1_direction);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT1);
-}
-
-void do_backlights(){
-    float light2_ambient[] = {0.0,0.0,0.0,0.0};
-    float light2_diffuse[] = {0.3,0.3,0.3,0.0};
-    float light2_specular[] = {0.2,0.2,0.2,0.0};
-    float light2_position[] = {0.0,1.0,-1.0,1.0};
-    float light2_direction[] = {0.0,-1.0,1.0,1.0};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light2_ambient);
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
-
-    glLightfv(GL_LIGHT2,GL_AMBIENT,light2_ambient);
-    glLightfv(GL_LIGHT2,GL_DIFFUSE,light2_diffuse);
-    glLightfv(GL_LIGHT2,GL_SPECULAR,light2_specular);
-    glLightf(GL_LIGHT2,GL_SPOT_EXPONENT,2.5);
-    glLightf(GL_LIGHT2,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT2,GL_CONSTANT_ATTENUATION,1.0);
-    glLightf(GL_LIGHT2,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT2,GL_QUADRATIC_ATTENUATION,0.01);
-    glLightfv(GL_LIGHT2,GL_POSITION,light2_position);
-    glLightfv(GL_LIGHT2,GL_SPOT_DIRECTION,light2_direction);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT2);
-}
-
-
-
-void do_material(){
-    float mat_ambient[] = {0.0,0.0,0.0,0.0};
-    float mat_diffuse[] = {0.5,0.5,0.0,1.0};
-    float mat_specular[] = {1.0,1.0,1.0,1.0};
-    float mat_shininess[] = {14.0};
-
-    glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
-    glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
-    glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
-    glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
-}
-
 int main(int argc,char** argv)
 {
     glutInit(&argc,argv);
@@ -452,14 +295,13 @@ int main(int argc,char** argv)
     glutInitWindowSize(600,600);
     glutInitWindowPosition(100,50);
     glutCreateWindow("my bunny");
-    glClearColor(0.0,0.0,0.0,0.0);
-    glEnable(GL_DEPTH_TEST);
-    setup_the_viewlolume();
-    //do_keylights();
-    //do_filllights();
-    //do_backlights();
-    do_material();
+
+    //setup_the_viewvolume();
+
+    //open shaders
     set_shaders();
+    glutSpecialFunc(skey);
+    glutKeyboardFunc(key);
     glutDisplayFunc(draw_stuff);
     glutMainLoop();
     return 0;
