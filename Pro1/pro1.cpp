@@ -13,7 +13,7 @@
 #include "plyModel.h"
 
 
-
+int glslprogram = 0;
 //glsl begin
 
 char *read_shader_program(const char* filename)
@@ -294,12 +294,12 @@ int main(int argc,char** argv)
     glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
     glutInitWindowSize(600,600);
     glutInitWindowPosition(100,50);
-    glutCreateWindow("my bunny");
+    glutCreateWindow("Golden Bunny");
 
     //setup_the_viewvolume();
 
     //open shaders
-    set_shaders();
+    glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
     glutDisplayFunc(draw_stuff);
