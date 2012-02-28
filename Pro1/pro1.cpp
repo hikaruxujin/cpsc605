@@ -13,6 +13,23 @@
 #include "plyModel.h"
 
 
+#define NORMAL 1
+#define AA 2
+#define FIELD 3
+#define MOTIONBLUR 4
+
+int rendermode = NORMAL;
+
+
+#define VPASSES 10
+#define JITTER 0.001
+
+double genrand()
+{
+    return (((double)(rand()+1))/2147483649.);
+}
+
+
 int glslprogram = 0;
 //glsl begin
 
@@ -72,9 +89,10 @@ struct point up = {0.0,1.0,0.0};
 
 float angleH = 0.0;
 float angleV = 0.0;
+float distance = 0.4;
 #define PI 3.14159265
 
-void setup_the_viewvolume(){
+void setup_the_viewvolume(point& eye,point& view,point& up){
 	
 
 	glMatrixMode(GL_PROJECTION);
@@ -99,9 +117,26 @@ void key(unsigned char key, int x, int y)
   {
 	  angleH = 0.0;
 	  angleV = 0.0;
-	  eye.z = 0.4*cos(angleH);
-	  eye.x = 0.4*sin(angleH);
-	  eye.y = 0.4*sin(angleV);
+	  distance = 0.4;
+	  eye.z = distance*cos(angleH);
+	  eye.x = distance*sin(angleH);
+	  eye.y = distance*sin(angleV);
+	  glutPostRedisplay();
+  }
+  if(key == 'Z')
+  {
+	  distance -= 0.05;
+	  eye.z = distance*cos(angleH);
+	  eye.x = distance*sin(angleH);
+	  eye.y = distance*sin(angleV);
+	  glutPostRedisplay();
+  }
+  if(key == 'z')
+  {
+	  distance += 0.05;
+	  eye.z = distance*cos(angleH);
+	  eye.x = distance*sin(angleH);
+	  eye.y = distance*sin(angleV);
 	  glutPostRedisplay();
   }
   printf("%c %d %d\n",key,x,y);
@@ -116,8 +151,8 @@ void skey(int key, int x, int y)
 	  {
 		  angleH = 0.0;
 	  }
-	  eye.z =0.4*cos(angleH);
-	  eye.x =0.4*sin(angleH);
+	  eye.z =distance*cos(angleH);
+	  eye.x =distance*sin(angleH);
 	  glutPostRedisplay();
   }
   if(key == GLUT_KEY_RIGHT)
@@ -127,8 +162,8 @@ void skey(int key, int x, int y)
 	  {
 		  angleH = 2 * PI;
 	  }
-	  eye.z =0.4*cos(angleH);
-	  eye.x =0.4*sin(angleH);
+	  eye.z =distance*cos(angleH);
+	  eye.x =distance*sin(angleH);
 	  glutPostRedisplay();
   }
   if(key == GLUT_KEY_UP)
@@ -138,7 +173,7 @@ void skey(int key, int x, int y)
 	  {
 		  angleV = 0.0;
 	  }
-	  eye.y =0.4*sin(angleV);
+	  eye.y =distance*sin(angleV);
 	  glutPostRedisplay();
   }
     if(key == GLUT_KEY_DOWN)
@@ -148,7 +183,7 @@ void skey(int key, int x, int y)
 	  {
 		  angleV = 2 * PI;
 	  }
-	  eye.y =0.4*sin(angleV);
+	  eye.y =distance*sin(angleV);
 	  glutPostRedisplay();
   }
   printf("%d %d %d\n",key,x,y);
@@ -253,7 +288,7 @@ void draw_stuff()
 	glClearColor(0.0,0.0,0.0,0.0);
     glEnable(GL_DEPTH_TEST);
     
-	setup_the_viewvolume();
+	setup_the_viewvolume(eye,view,up);
 	do_keylights();
     do_filllights();
     do_backlights();
@@ -261,23 +296,6 @@ void draw_stuff()
     
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
-    //glPushMatrix();
-    //glTranslatef(-0.2,0.1,0.0);
-    //bunny.Draw();
-    //glPopMatrix();
-    //glPushMatrix();
-    //glTranslatef(0.2,0.1,0.0);
-    //bunny.Draw();
-    //glPopMatrix();
-    //glPushMatrix();
-    //glTranslatef(0.2,-0.3,0.0);
-    //bunny.Draw();
-    //glPopMatrix();
-    //glPushMatrix();
-    //glTranslatef(-0.2,-0.3,0.0);
-    //bunny.Draw();
-    //glPopMatrix();
-    //glDisable(GL_LIGHT0);
     glPushMatrix();
     glTranslatef(0.03,-0.1,0.0);
     bunny.Draw();
@@ -285,13 +303,82 @@ void draw_stuff()
     
     //glutSolidTorus(0.4,0.8,128,128);
     
-    glutSwapBuffers();
 }
+
+void jitter_view()
+{
+    view.x = JITTER*genrand();
+    view.y = JITTER*genrand();
+    view.z = JITTER*genrand();
+}
+
+void reset_view()
+{
+	view.x = 0.0;
+	view.y = 0.0;
+	view.z = 0.0;
+}
+
+void render()
+{
+	int view_pass;
+	switch(rendermode){
+		case NORMAL:
+		reset_view();
+		draw_stuff();
+		break;
+		
+		case AA:
+		glClear(GL_ACCUM_BUFFER_BIT);
+		for(view_pass=0;view_pass<VPASSES;view_pass++){
+			jitter_view();
+			draw_stuff();
+			glFlush();
+			glAccum(GL_ACCUM,1.0/(float)(VPASSES));
+		}
+		glAccum(GL_RETURN,1.0);
+		break;
+		
+		case FIELD:
+		break;
+		
+		case MOTIONBLUR:
+		break;
+	}
+	glutSwapBuffers();
+	
+}
+
+//menu
+
+void processMenuEvents(int option) {
+	if(option > 0 && option <=5 )
+	{
+		rendermode = option;
+		glutPostRedisplay();
+		printf("%d\n",rendermode);
+	} else {
+		rendermode = 0;
+	}
+}
+
+void createGLUTMenus() {
+
+	int submenu;
+
+	submenu = glutCreateMenu(processMenuEvents);
+	glutAddMenuEntry("Normal",NORMAL);
+	glutAddMenuEntry("Antialiasing",AA);
+	glutAddMenuEntry("FieldDepth",FIELD);
+	glutAddMenuEntry("MotionBlur",MOTIONBLUR);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+//end menu
 
 int main(int argc,char** argv)
 {
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE|GLUT_ACCUM);
     glutInitWindowSize(600,600);
     glutInitWindowPosition(100,50);
     glutCreateWindow("Golden Bunny");
@@ -302,7 +389,8 @@ int main(int argc,char** argv)
     glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
-    glutDisplayFunc(draw_stuff);
+    glutDisplayFunc(render);
+	createGLUTMenus();
     glutMainLoop();
     return 0;
 }

@@ -4,7 +4,7 @@
 #include <GL/glut.h>
 
 #define VPASSES 10
-#define JITTER 0.1
+#define JITTER 0.02
 
 double genrand()
 {
@@ -56,13 +56,6 @@ void jitter_view()
     up.x = 0.0;
     up.y = 1.0;
     up.z = 0.0;
-    vdir.x = view.x - eye.x;
-    vdir.y = view.y - eye.y;
-    vdir.z = view.z - eye.z;
-
-    vtemp = cross(vdir,up);
-    utemp = cross(vtemp,vdir);
-    up = unit_length(utemp);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
