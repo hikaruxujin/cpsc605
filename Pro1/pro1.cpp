@@ -364,9 +364,8 @@ void processMenuEvents(int option) {
 
 void createGLUTMenus() {
 
-	int submenu;
 
-	submenu = glutCreateMenu(processMenuEvents);
+	glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Normal",NORMAL);
 	glutAddMenuEntry("Antialiasing",AA);
 	glutAddMenuEntry("FieldDepth",FIELD);
