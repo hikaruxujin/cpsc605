@@ -34,6 +34,8 @@ int rendermode = NORMAL;
 #define DPASSES 20
 #define JITTERMODEL 0.01
 
+const float jittermodel[] = {0.01,0.02,0.03,0.04};
+
 double genrand()
 {
     return (((double)(rand()+1))/2147483649.);
@@ -309,9 +311,9 @@ void jitter_view()
     view.y = JITTER*genrand();
     view.z = JITTER*genrand();
 }
-void jitter_model()
+void jitter_model(float jitter)
 {
-	glTranslatef(JITTERMODEL*genrand(),JITTERMODEL*genrand(),JITTERMODEL*genrand());
+	glTranslatef(jitter*genrand(),jitter*genrand(),jitter*genrand());
 }
 
 void reset_view()
@@ -364,10 +366,16 @@ void render()
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<DPASSES;view_pass++){
 			glPushMatrix();
-			jitter_model();
-			glTranslatef(0.0,0.1,-0.2);
+			jitter_model(jittermodel[0]);
+			glTranslatef(-0.05,0.05,-0.1);
 			//glAccum(GL_MULT,0.5);
 			draw_stuff();
+			glPopMatrix();
+			glPushMatrix();
+			jitter_model(jittermodel[1]);
+			glTranslatef(0.05,0.1,-0.2);
+			//glAccum(GL_MULT,0.5);
+			draw_bunny();
 			glPopMatrix();
 			glAccum(GL_ACCUM,1.0/(float)(DPASSES));
 		}
