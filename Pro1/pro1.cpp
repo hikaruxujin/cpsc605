@@ -18,6 +18,8 @@
 #define FIELD 3
 #define MOTIONBLUR 4
 
+const char rendername[4][20]  = {"normal","antialiasing","depth of filed","motion blur"};
+
 int rendermode = NORMAL;
 
 
@@ -28,6 +30,9 @@ int rendermode = NORMAL;
 #define MPASSES 10
 
 #define JITTER 0.001
+
+#define DPASSES 20
+#define JITTERMODEL 0.01
 
 double genrand()
 {
@@ -304,6 +309,10 @@ void jitter_view()
     view.y = JITTER*genrand();
     view.z = JITTER*genrand();
 }
+void jitter_model()
+{
+	glTranslatef(JITTERMODEL*genrand(),JITTERMODEL*genrand(),JITTERMODEL*genrand());
+}
 
 void reset_view()
 {
@@ -314,6 +323,15 @@ void reset_view()
 
 void render()
 {
+	//~ double modelview[16];
+	
+	//~ glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	//~ printf("\n");
+	//~ for(int i = 0;i < 16; i++)
+	//~ {
+		//~ printf("%f\t",modelview[i]);
+	//~ }
+	//~ printf("end\n");
 	int view_pass;
 	int step;
 	switch(rendermode){
@@ -343,22 +361,18 @@ void render()
 		setup_the_viewvolume(eye,view,up);
 		set_lights();
 		draw_stuff();
-		glPushMatrix();
-		glTranslatef(0.0,0.1,-0.2);
+		glClear(GL_ACCUM_BUFFER_BIT);
+		for(view_pass=0;view_pass<DPASSES;view_pass++){
+			glPushMatrix();
+			jitter_model();
+			glTranslatef(0.0,0.1,-0.2);
+			//glAccum(GL_MULT,0.5);
+			draw_stuff();
+			glPopMatrix();
+			glAccum(GL_ACCUM,1.0/(float)(DPASSES));
+		}
+		glAccum(GL_RETURN,1.0);
 		draw_bunny();
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.0,-0.1,-0.2);
-		draw_bunny();
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.1,0.0,-0.2);
-		draw_bunny();
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(-0.1,0.0,-0.2);
-		draw_bunny();
-		glPopMatrix();
 		break;
 		
 		case MOTIONBLUR:
@@ -377,6 +391,7 @@ void render()
 		draw_stuff();
 		glAccum(GL_ACCUM,MAXWEIGHT);
 		glAccum(GL_RETURN,1.0);
+		draw_bunny();
 		glPopMatrix();
 		reset_view();
 		break;
@@ -392,7 +407,7 @@ void processMenuEvents(int option) {
 	{
 		rendermode = option;
 		glutPostRedisplay();
-		printf("%d\n",rendermode);
+		printf("%d:%s\n",rendermode,rendername[rendermode-1]);
 	} else {
 		rendermode = 0;
 	}
@@ -404,7 +419,7 @@ void createGLUTMenus() {
 	glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Normal",NORMAL);
 	glutAddMenuEntry("Antialiasing",AA);
-	//glutAddMenuEntry("FieldDepth",FIELD);
+	glutAddMenuEntry("DepthofField",FIELD);
 	glutAddMenuEntry("MotionBlur",MOTIONBLUR);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
