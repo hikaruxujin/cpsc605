@@ -22,6 +22,11 @@ int rendermode = NORMAL;
 
 
 #define VPASSES 10
+
+#define STEPLENGTH 0.01
+#define MAXWEIGHT 0.3
+#define MPASSES 10
+
 #define JITTER 0.001
 
 double genrand()
@@ -191,10 +196,10 @@ void skey(int key, int x, int y)
 
 void do_keylights(){
     float light0_ambient[] = {0.0,0.0,0.0,0.0};
-    float light0_diffuse[] = {0.8,0.8,0.8,0.0};
-    float light0_specular[] = {0.8,0.8,0.8,0.0};
-    float light0_position[] = {-2.0,2.0,2.0,1.0};
-    float light0_direction[] = {2.0,-2.0,-2.0,1.0};
+    float light0_diffuse[] = {0.6,0.6,0.6,1.0};
+    float light0_specular[] = {0.6,0.6,0.6,1.0};
+    float light0_position[] = {-2.0,2.0,3.2,1.0};
+    float light0_direction[] = {2.0,-2.0,-3.2,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light0_ambient);
 
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
@@ -202,11 +207,6 @@ void do_keylights(){
     glLightfv(GL_LIGHT0,GL_AMBIENT,light0_ambient);
     glLightfv(GL_LIGHT0,GL_DIFFUSE,light0_diffuse);
     glLightfv(GL_LIGHT0,GL_SPECULAR,light0_specular);
-    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,1.0);
-    glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);
-    glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.01);
     glLightfv(GL_LIGHT0,GL_POSITION,light0_position);
     glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,light0_direction);
     glEnable(GL_LIGHTING);
@@ -215,22 +215,14 @@ void do_keylights(){
 
 void do_filllights(){
     float light1_ambient[] = {0.0,0.0,0.0,0.0};
-    float light1_diffuse[] = {0.4,0.4,0.4,0.0};
-    float light1_specular[] = {0.4,0.4,0.4,0.0};
-    float light1_position[] = {2.0,0.0,2.0,1.0};
-    float light1_direction[] = {2.0,0.0,-2.0,1.0};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light1_ambient);
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+    float light1_diffuse[] = {0.3,0.3,0.3,1.0};
+    float light1_specular[] = {0.3,0.3,0.3,1.0};
+    float light1_position[] = {2.0,1.5,3.2,1.0};
+    float light1_direction[] = {-2.0,-1.5,-3.2,1.0};
 
     glLightfv(GL_LIGHT1,GL_AMBIENT,light1_ambient);
     glLightfv(GL_LIGHT1,GL_DIFFUSE,light1_diffuse);
     glLightfv(GL_LIGHT1,GL_SPECULAR,light1_specular);
-    glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,1.0);
-    glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,3.5);
-    glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.01);
     glLightfv(GL_LIGHT1,GL_POSITION,light1_position);
     glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION,light1_direction);
     glEnable(GL_LIGHTING);
@@ -239,22 +231,14 @@ void do_filllights(){
 
 void do_backlights(){
     float light2_ambient[] = {0.0,0.0,0.0,0.0};
-    float light2_diffuse[] = {0.3,0.3,0.3,0.0};
-    float light2_specular[] = {0.3,0.3,0.3,0.0};
-    float light2_position[] = {0.0,3.0,-3.0,1.0};
-    float light2_direction[] = {0.0,-2.0,2.0,1.0};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light2_ambient);
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,1);
+    float light2_diffuse[] = {0.3,0.3,0.3,1.0};
+    float light2_specular[] = {0.4,0.4,0.4,1.0};
+    float light2_position[] = {0.0,1.5,-1.5,1.0};
+    float light2_direction[] = {0.0,-1.5,1.5,1.0};
 
     glLightfv(GL_LIGHT2,GL_AMBIENT,light2_ambient);
     glLightfv(GL_LIGHT2,GL_DIFFUSE,light2_diffuse);
     glLightfv(GL_LIGHT2,GL_SPECULAR,light2_specular);
-    glLightf(GL_LIGHT2,GL_SPOT_EXPONENT,2.5);
-    glLightf(GL_LIGHT2,GL_SPOT_CUTOFF,180.0);
-    glLightf(GL_LIGHT2,GL_CONSTANT_ATTENUATION,1.0);
-    glLightf(GL_LIGHT2,GL_LINEAR_ATTENUATION,0.01);
-    glLightf(GL_LIGHT2,GL_QUADRATIC_ATTENUATION,0.01);
     glLightfv(GL_LIGHT2,GL_POSITION,light2_position);
     glLightfv(GL_LIGHT2,GL_SPOT_DIRECTION,light2_direction);
     glEnable(GL_LIGHTING);
@@ -266,13 +250,20 @@ void do_backlights(){
 void do_material(){	
     float mat_ambient[] = {0.0,0.0,0.0,0.0};
     float mat_diffuse[] = {1.0,0.8,0.0,1.0};
-    float mat_specular[] = {1.0,1.0,1.0,1.0};
-    float mat_shininess[] = {14.0};
+    float mat_specular[] = {0.6,0.6,0.6,1.0};
+    float mat_shininess[] = {9.0};
 
     glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
     glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
     glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
     glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
+}
+
+void set_lights(){
+	do_keylights();
+    do_filllights();
+    do_backlights();
+    do_material();
 }
 
 //load plyModel
@@ -283,27 +274,29 @@ plyModel bunny(filename);
 
 //end
 
+void draw_bunny()
+{
+	glPushMatrix();
+    glTranslatef(0.03,-0.1,0.0);
+    bunny.Draw();
+    glPopMatrix();
+}
+
 void draw_stuff()
 {
 	glClearColor(0.0,0.0,0.0,0.0);
     glEnable(GL_DEPTH_TEST);
-    
-	setup_the_viewvolume(eye,view,up);
-	do_keylights();
-    do_filllights();
-    do_backlights();
-    do_material();
+
     
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
-    glPushMatrix();
-    glTranslatef(0.03,-0.1,0.0);
-    bunny.Draw();
-    glPopMatrix();
+	draw_bunny();
     
     //glutSolidTorus(0.4,0.8,128,128);
     
 }
+
+
 
 void jitter_view()
 {
@@ -322,16 +315,22 @@ void reset_view()
 void render()
 {
 	int view_pass;
+	int step;
 	switch(rendermode){
 		case NORMAL:
 		reset_view();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
 		draw_stuff();
 		break;
 		
 		case AA:
+		reset_view();
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<VPASSES;view_pass++){
 			jitter_view();
+			setup_the_viewvolume(eye,view,up);
+			set_lights();
 			draw_stuff();
 			glFlush();
 			glAccum(GL_ACCUM,1.0/(float)(VPASSES));
@@ -340,9 +339,46 @@ void render()
 		break;
 		
 		case FIELD:
+		reset_view();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
+		draw_stuff();
+		glPushMatrix();
+		glTranslatef(0.0,0.1,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(0.0,-0.1,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(0.1,0.0,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(-0.1,0.0,-0.2);
+		draw_bunny();
+		glPopMatrix();
 		break;
 		
 		case MOTIONBLUR:
+		reset_view(); 
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
+		glPushMatrix();
+		glTranslatef(-STEPLENGTH*MPASSES,0.0,0.0);
+		glClear(GL_ACCUM_BUFFER_BIT);
+		for(step=0;step<MPASSES;step++){
+			glAccum(GL_MULT,(float)step/MPASSES+0.2);
+			glTranslatef(STEPLENGTH,0.0,0.0);
+			draw_stuff();
+			glAccum(GL_ACCUM,(1.0-(float)MAXWEIGHT)/(float)(MPASSES));
+		}
+		draw_stuff();
+		glAccum(GL_ACCUM,MAXWEIGHT);
+		glAccum(GL_RETURN,1.0);
+		glPopMatrix();
+		reset_view();
 		break;
 	}
 	glutSwapBuffers();
@@ -368,7 +404,7 @@ void createGLUTMenus() {
 	glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Normal",NORMAL);
 	glutAddMenuEntry("Antialiasing",AA);
-	glutAddMenuEntry("FieldDepth",FIELD);
+	//glutAddMenuEntry("FieldDepth",FIELD);
 	glutAddMenuEntry("MotionBlur",MOTIONBLUR);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
@@ -385,7 +421,7 @@ int main(int argc,char** argv)
     //setup_the_viewvolume();
 
     //open shaders
-    glslprogram = set_shaders();
+    //glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
     glutDisplayFunc(render);

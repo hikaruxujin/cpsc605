@@ -22,6 +22,11 @@ int rendermode = NORMAL;
 
 
 #define VPASSES 10
+
+#define STEPLENGTH 0.02
+#define MSTEPS 8
+#define MPASSES (MSTEPS+1)*MSTEPS/2
+
 #define JITTER 0.001
 
 double genrand()
@@ -191,8 +196,8 @@ void skey(int key, int x, int y)
 
 void do_keylights(){
     float light0_ambient[] = {0.0,0.0,0.0,0.0};
-    float light0_diffuse[] = {0.75,0.75,0.75,0.0};
-    float light0_specular[] = {0.5,0.5,0.5,0.0};
+    float light0_diffuse[] = {0.6,0.6,0.6,1.0};
+    float light0_specular[] = {0.6,0.6,0.6,1.0};
     float light0_position[] = {-1.0,1.0,2.0,1.0};
     float light0_direction[] = {1.0,-1.0,-2.0,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light0_ambient);
@@ -215,8 +220,8 @@ void do_keylights(){
 
 void do_filllights(){
     float light1_ambient[] = {0.0,0.0,0.0,0.0};
-    float light1_diffuse[] = {0.8,0.8,0.8,0.0};
-    float light1_specular[] = {0.5,0.5,0.5,0.0};
+    float light1_diffuse[] = {0.3,0.3,0.3,1.0};
+    float light1_specular[] = {0.3,0.3,0.3,1.0};
     float light1_position[] = {1.0,0.5,2.0,1.0};
     float light1_direction[] = {-1.0,-0.5,-2.0,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light1_ambient);
@@ -239,8 +244,8 @@ void do_filllights(){
 
 void do_backlights(){
     float light2_ambient[] = {0.0,0.0,0.0,0.0};
-    float light2_diffuse[] = {0.8,0.8,0.8,0.0};
-    float light2_specular[] = {0.5,0.5,0.5,0.0};
+    float light2_diffuse[] = {0.3,0.3,0.3,1.0};
+    float light2_specular[] = {0.3,0.3,0.3,1.0};
     float light2_position[] = {0.0,1.0,-1.0,1.0};
     float light2_direction[] = {0.0,-1.0,1.0,1.0};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT,light2_ambient);
@@ -263,17 +268,23 @@ void do_backlights(){
 
 
 
-void do_material(){
+void do_material(){	
     float mat_ambient[] = {0.0,0.0,0.0,0.0};
-    float mat_diffuse[] = {0.8,0.8,0.0,1.0};
+    float mat_diffuse[] = {1.0,0.8,0.0,1.0};
     float mat_specular[] = {1.0,1.0,1.0,1.0};
-
-    float mat_shininess[] = {5.0};
+    float mat_shininess[] = {15.0};
 
     glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
     glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
     glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
     glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
+}
+
+void set_lights(){
+	do_keylights();
+    do_filllights();
+    do_backlights();
+    do_material();
 }
 
 //load plyModel
@@ -284,27 +295,29 @@ plyModel bunny(filename);
 
 //end
 
-void draw_stuff()
+void draw_bunny()
 {
-    glClearColor(0.0,0.0,0.0,0.0);
-    glEnable(GL_DEPTH_TEST);
-    
-    setup_the_viewvolume(eye,view,up);
-    do_keylights();
-    //do_filllights();
-    //do_backlights();
-    do_material();
-    
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    
-    glPushMatrix();
+	glPushMatrix();
     glTranslatef(0.03,-0.1,0.0);
     bunny.Draw();
     glPopMatrix();
+}
+
+void draw_stuff()
+{
+	glClearColor(0.0,0.0,0.0,0.0);
+    glEnable(GL_DEPTH_TEST);
+
+    
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    
+	draw_bunny();
     
     //glutSolidTorus(0.4,0.8,128,128);
     
 }
+
+
 
 void jitter_view()
 {
@@ -323,16 +336,22 @@ void reset_view()
 void render()
 {
 	int view_pass;
+	int step;
 	switch(rendermode){
 		case NORMAL:
 		reset_view();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
 		draw_stuff();
 		break;
 		
 		case AA:
+		reset_view();
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<VPASSES;view_pass++){
 			jitter_view();
+			setup_the_viewvolume(eye,view,up);
+			set_lights();
 			draw_stuff();
 			glFlush();
 			glAccum(GL_ACCUM,1.0/(float)(VPASSES));
@@ -341,9 +360,50 @@ void render()
 		break;
 		
 		case FIELD:
+		reset_view();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
+		draw_stuff();
+		glPushMatrix();
+		glTranslatef(0.0,0.1,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(0.0,-0.1,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(0.1,0.0,-0.2);
+		draw_bunny();
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(-0.1,0.0,-0.2);
+		draw_bunny();
+		glPopMatrix();
 		break;
 		
 		case MOTIONBLUR:
+		reset_view(); 
+		view.x += STEPLENGTH*(MSTEPS-2);
+		printf("%d\t%d\n",MSTEPS,MPASSES);
+		glClear(GL_ACCUM_BUFFER_BIT);
+		for(step=0;step<MSTEPS;step++){
+			if(view.x > 0)
+			view.x -=STEPLENGTH;
+
+			for(view_pass = 0;view_pass <= step;view_pass++)
+			{
+				setup_the_viewvolume(eye,view,up);
+				set_lights();
+				draw_stuff();
+				glFlush();
+
+				printf("%d\t",view_pass);
+				glAccum(GL_ACCUM,1.0/(float)(MPASSES));
+			}
+		}
+		glAccum(GL_RETURN,1.0);
+		reset_view();
 		break;
 	}
 	glutSwapBuffers();
@@ -365,9 +425,8 @@ void processMenuEvents(int option) {
 
 void createGLUTMenus() {
 
-	int submenu;
 
-	submenu = glutCreateMenu(processMenuEvents);
+	glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Normal",NORMAL);
 	glutAddMenuEntry("Antialiasing",AA);
 	glutAddMenuEntry("FieldDepth",FIELD);
@@ -387,7 +446,7 @@ int main(int argc,char** argv)
     //setup_the_viewvolume();
 
     //open shaders
-    //glslprogram = set_shaders();
+    glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
     glutDisplayFunc(render);

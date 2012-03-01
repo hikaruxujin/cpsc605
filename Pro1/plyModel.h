@@ -33,7 +33,7 @@ public:
 		free(Triangles);
 		free(Vertices);
 		free(Normals);
-		printf("free model\n");
+		printf("free plyModel\n");
 	}
  private:
     float* Triangles;
