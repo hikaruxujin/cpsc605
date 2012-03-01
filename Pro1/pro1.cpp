@@ -421,7 +421,7 @@ int main(int argc,char** argv)
     //setup_the_viewvolume();
 
     //open shaders
-    //glslprogram = set_shaders();
+    glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
     glutDisplayFunc(render);
