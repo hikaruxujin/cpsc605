@@ -10,7 +10,7 @@
 #include <cmath>
 #include <string>
 #include <fcntl.h>
-#include "plyModel.h"
+#include "plyModel1.h"
 
 
 #define NORMAL 1
@@ -72,8 +72,8 @@ GLuint set_shaders()
     //~ fs = read_shader_program("phong.frag");
     vs = read_shader_program("blinn.vert");
     fs = read_shader_program("blinn.frag");
-    printf("%s\n",vs);
-    printf("%s\n",fs);
+    //printf("%s\n",vs);
+    //printf("%s\n",fs);
     glShaderSource(v,1,(const char **)&vs,NULL);
     glShaderSource(f,1,(const char **)&fs,NULL);
     free(vs);
