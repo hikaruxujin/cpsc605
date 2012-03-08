@@ -10,7 +10,7 @@
 #include <cmath>
 #include <string>
 #include <fcntl.h>
-#include "plyModel1.h"
+#include "plyModel.h"
 
 
 #define NORMAL 1
@@ -18,7 +18,7 @@
 #define FIELD 3
 #define MOTIONBLUR 4
 
-const char rendername[4][20]  = {"normal","antialiasing","depth of filed","motion blur"};
+const char rendername[4][20]  = {"normal","antialiasing","depth of field","motion blur"};
 
 int rendermode = NORMAL;
 
@@ -33,8 +33,6 @@ int rendermode = NORMAL;
 
 #define DPASSES 20
 #define JITTERMODEL 0.01
-
-void set_lights();
 
 const float jittermodel[] = {0.01,0.02,0.03,0.04};
 
@@ -74,8 +72,8 @@ GLuint set_shaders()
     //~ fs = read_shader_program("phong.frag");
     vs = read_shader_program("blinn.vert");
     fs = read_shader_program("blinn.frag");
-    //printf("%s\n",vs);
-    //printf("%s\n",fs);
+    printf("%s\n",vs);
+    printf("%s\n",fs);
     glShaderSource(v,1,(const char **)&vs,NULL);
     glShaderSource(f,1,(const char **)&fs,NULL);
     free(vs);
@@ -112,8 +110,12 @@ void setup_the_viewvolume(point& eye,point& view,point& up){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0,1.0,0.1,20.0);
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+
+
 	gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
 
 }
@@ -334,14 +336,11 @@ void render()
 	//~ printf("end\n");
 	int view_pass;
 	int step;
-	//~ set_lights();
-	setup_the_viewvolume(eye,view,up);
-	set_lights();
 	switch(rendermode){
 		case NORMAL:
 		reset_view();
-		//~ setup_the_viewvolume(eye,view,up);
-		//~ set_lights();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
 		draw_stuff();
 		break;
 		
@@ -350,8 +349,8 @@ void render()
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<VPASSES;view_pass++){
 			jitter_view();
-			//~ setup_the_viewvolume(eye,view,up);
-			//~ set_lights();
+			setup_the_viewvolume(eye,view,up);
+			set_lights();
 			draw_stuff();
 			glFlush();
 			glAccum(GL_ACCUM,1.0/(float)(VPASSES));
@@ -361,8 +360,8 @@ void render()
 		
 		case FIELD:
 		reset_view();
-		//~ setup_the_viewvolume(eye,view,up);
-		//~ set_lights();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
 		draw_stuff();
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<DPASSES;view_pass++){
@@ -386,8 +385,8 @@ void render()
 		
 		case MOTIONBLUR:
 		reset_view(); 
-		//~ setup_the_viewvolume(eye,view,up);
-		//~ set_lights();
+		setup_the_viewvolume(eye,view,up);
+		set_lights();
 		glPushMatrix();
 		glTranslatef(-STEPLENGTH*MPASSES,0.0,0.0);
 		glClear(GL_ACCUM_BUFFER_BIT);
