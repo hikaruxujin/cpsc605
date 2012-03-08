@@ -115,6 +115,7 @@ void setup_the_viewvolume(point& eye,point& view,point& up){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
+	//~ set_lights();
 
 }
 
@@ -350,7 +351,7 @@ void render()
 		glClear(GL_ACCUM_BUFFER_BIT);
 		for(view_pass=0;view_pass<VPASSES;view_pass++){
 			jitter_view();
-			//~ setup_the_viewvolume(eye,view,up);
+			setup_the_viewvolume(eye,view,up);
 			//~ set_lights();
 			draw_stuff();
 			glFlush();
@@ -445,6 +446,7 @@ int main(int argc,char** argv)
     //setup_the_viewvolume();
 
     //open shaders
+    //~ set_lights();
     glslprogram = set_shaders();
     glutSpecialFunc(skey);
     glutKeyboardFunc(key);
