@@ -4,6 +4,10 @@ varying vec3 v;
 
 #define MAX_LIGHTS 3 
 #define PI 3.14159265
+<<<<<<< HEAD
+=======
+   
+>>>>>>> 0bc9b7e38b7aa67c8e34643a04408780ae113096
 void main (void)  
 {  
    vec4 Color = vec4(0.0, 0.0, 0.0, 0.0);
@@ -18,7 +22,7 @@ void main (void)
 	   //calculate diffuse 
 	   vec4 Idiff = gl_FrontLightProduct[i].diffuse * max(dot(N,L), 0.0);
 	   Idiff = clamp(Idiff, 0.0, 1.0);     
-	   
+	   float factor = (gl_FrontMaterial.shininess+2.0)/(8.0*PI);
 	   // calculate specular 	   
 	   vec4 Ispec = gl_FrontLightProduct[i].specular*pow(max(dot(R,V),0.0),gl_FrontMaterial.shininess)
 	   * pow(max(dot(H,N),0.0),gl_FrontMaterial.shininess);

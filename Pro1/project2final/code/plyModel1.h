@@ -69,11 +69,7 @@ plyModel::plyModel(const char* filename):
 	TotalFaces(0)
 {
     Load(filename);
-<<<<<<< HEAD
-    Smooth();
-=======
     //Smooth();
->>>>>>> 0bc9b7e38b7aa67c8e34643a04408780ae113096
 }
 
  
@@ -234,11 +230,7 @@ int plyModel::Load(const char* filename)
     } else {
       printf("File does not have a .PLY extension. ");    
     }  
-<<<<<<< HEAD
-    //Smooth(); 
-=======
     Smooth(); 
->>>>>>> 0bc9b7e38b7aa67c8e34643a04408780ae113096
 	return 0;
 }
 
@@ -294,7 +286,4 @@ void plyModel::Draw()
 }
 //plyModel end
 #endif
-<<<<<<< HEAD
-=======
 
->>>>>>> 0bc9b7e38b7aa67c8e34643a04408780ae113096
