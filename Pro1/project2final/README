@@ -1,0 +1,14 @@
+Programming Project #2 (Show me the bunny)
+Team member: Jin Xu, Liang Fang.
+
+Compiling instruction:
+1. Install the g++ compiler
+2. Use "make" command compile the project.
+3. After compile the project, there is a "run" file. Use the command ./run run the project.
+
+
+How to use the project.
+1. Press 'z' to go close to the bunny, and press 'Z' to go far from the bnny.
+2. Press the right, left, up and down to control the eye point posstion.
+3. Click the mouse right button,it shows an menu that switch antialising, depth of field effects and motion-blur.
+
