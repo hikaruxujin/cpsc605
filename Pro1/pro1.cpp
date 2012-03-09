@@ -10,7 +10,7 @@
 #include <cmath>
 #include <string>
 #include <fcntl.h>
-#include "plyModel1.h"
+#include "plyModel.h"
 
 
 #define NORMAL 1
@@ -109,13 +109,15 @@ float distance = 0.4;
 void setup_the_viewvolume(point& eye,point& view,point& up){
 	
 
+	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0,1.0,0.1,20.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
 	//~ set_lights();
+	gluLookAt(eye.x,eye.y,eye.z,view.x,view.y,view.z,up.x,up.y,up.z);
+	set_lights();
 
 }
 
@@ -337,7 +339,7 @@ void render()
 	int step;
 	//~ set_lights();
 	setup_the_viewvolume(eye,view,up);
-	set_lights();
+	//set_lights();
 	switch(rendermode){
 		case NORMAL:
 		reset_view();

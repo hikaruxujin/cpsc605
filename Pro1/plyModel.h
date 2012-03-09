@@ -24,6 +24,7 @@ class plyModel
 public:
 	int Load(const char *filename);
 	void Draw();
+	void Smooth();
 	normal calculateNormal( float *coord1, float *coord2, float *coord3 );
 	plyModel();
 	plyModel(const char* filename);
@@ -39,6 +40,7 @@ public:
     float* Triangles;
 	float* Vertices;
 	float* Normals;
+	int*   Faces;	
  
 	int TotalConnectedPoints;
 	int TotalFaces;
@@ -67,6 +69,7 @@ plyModel::plyModel(const char* filename):
 	TotalFaces(0)
 {
     Load(filename);
+    //Smooth();
 }
 
  
@@ -158,6 +161,7 @@ int plyModel::Load(const char* filename)
 			Vertices = (float*) malloc (3*TotalConnectedPoints*sizeof(float));
 			Triangles = (float*) malloc(9*TotalFaces*sizeof(float));
 			Normals  = (float*) malloc(9*TotalFaces*sizeof(float));
+			Faces = (int*) malloc(3*TotalFaces*sizeof(int));
  
 			// read verteces
 			i =0;
@@ -182,7 +186,7 @@ int plyModel::Load(const char* filename)
 						//sscanf(buffer,"%i%i%i\n", vertex1,vertex2,vertex3 );
 						buffer[0] = ' ';
 						sscanf(buffer,"%i%i%i", &vertex1,&vertex2,&vertex3 );
-						
+						sscanf(buffer,"%i%i%i", &Faces[3*iterator],&Faces[3*iterator+1],&Faces[3*iterator+2] );
 						//printf("%f %f %f ", Vertices[3*vertex1], Vertices[3*vertex1+1], Vertices[3*vertex1+2]);
  
 						Triangles[triangle_index] = Vertices[3*vertex1];
@@ -225,8 +229,49 @@ int plyModel::Load(const char* filename)
 		}
     } else {
       printf("File does not have a .PLY extension. ");    
-    }   
+    }  
+    Smooth(); 
 	return 0;
+}
+
+void plyModel::Smooth()
+{
+	printf("smooth...\n");
+	printf("%f\t%f\t%f\n",Normals[0],Normals[1],Normals[2]);
+	float* smooth = (float*) malloc (3*TotalConnectedPoints*sizeof(float));
+
+	for(int i = 0 ;i < 3*TotalFaces; i++)
+	{
+		int j = Faces[i];
+		smooth[3*j] += Normals[3*i];
+		smooth[3*j+1] += Normals[3*i+1];
+		smooth[3*j+2] += Normals[3*i+2];
+		//printf("%f\t%f\t%f\n",smooth[j],smooth[j+1],smooth[j+2]);
+	}
+	//~ for(int i =0;i<3*TotalConnectedPoints;i+=3)
+		//~ printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
+	for(int i = 0 ;i < 3*TotalConnectedPoints; i+=3)
+	{
+		//printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
+		float val = sqrt( smooth[i]*smooth[i] + smooth[i+1]*smooth[i+1] + smooth[i+2]*smooth[i+2] );
+		if(val!=0){
+		smooth[i] = smooth[i]/val;
+		smooth[i+1] = smooth[i+1]/val;
+		smooth[i+2] = smooth[i+2]/val;
+		}
+		//printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
+	}
+	for(int i = 0 ;i < 3*TotalFaces; i++)
+	{
+		int j = 3*Faces[i];
+		Normals[3*i] = smooth[j];
+		Normals[3*i+1] = smooth[j+1];
+		Normals[3*i+2] = smooth[j+2];
+	}
+
+	printf("%f\t%f\t%f\n",Normals[0],Normals[1],Normals[2]);
+	//printf("%f\t%f\t%f\n",smooth[21216*3],smooth[21216*3+1],smooth[21216*3+2]);
+	free(smooth);
 }
  
 void plyModel::Draw()
@@ -241,3 +286,4 @@ void plyModel::Draw()
 }
 //plyModel end
 #endif
+
