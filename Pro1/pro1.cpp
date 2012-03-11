@@ -152,6 +152,17 @@ void key(unsigned char key, int x, int y)
 	  eye.y = distance*sin(angleV);
 	  glutPostRedisplay();
   }
+  if(key == 'a')
+  {
+	  glUseProgram(0);
+	  glutPostRedisplay();
+  }
+  if(key == 'g')
+  {
+	  glUseProgram(glslprogram);
+	  glutPostRedisplay();
+  }
+
   printf("%c %d %d\n",key,x,y);
 }
 
