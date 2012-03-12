@@ -56,31 +56,28 @@ void draw_stuff(){
     {0.0,0.0,0.0},{0.0,0.0,1.0},{1.0,0.0,1.0},{1.0,0.0,0.0}
     };
 
-
-    glEnable(GL_DEPTH_TEST);
     glClearColor(0.35,0.35,0.35,0.0);
-    float mytexcoords[4][2] = {{0.0,1.0},{1.0,1.0},{1.0,0.0},{0.0,0.0}};
+    float mytexcoords[4][2] = {{0.0,0.0},{0.0,1.0},{1.0,1.0},{1.0,0.0}};
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glShadeModel(GL_SMOOTH);
 
-//    glPolygonMode(GL_FRONT,GL_LINE);
-//    glPolygonMode(GL_BACK,GL_LINE);
-//
     glColor3f(1.0,1.0,0.0);
-//    glLineWidth(2.0);
-    //glutPostRedisplay();
-    //glRotated(spin,0.0,1.0,0.0);
-    //glPushMatrix();
-   // glTranslated(-0.5,-0.5,-0.5);
-    glBegin(GL_QUADS);
-    glBindTexture(GL_TEXTURE_2D,1);
+
+    glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,1);
     glEnable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+
     glNormal3f(0.0,0.0,1.0);
     for(i=0;i<4;i++) {
 		glTexCoord2fv(mytexcoords[i]);
 		glVertex3f(front[i].x,front[i].y,front[i].z);
 	}
-	//glDisable(GL_TEXTURE_2D);
+	glEnd();
+	
+	glDisable(GL_TEXTURE_2D);
+	
+	glBegin(GL_QUADS);
     glNormal3f(0.0,0.0,-1.0);
     for(i=0;i<4;i++) glVertex3f(back[i].x,back[i].y,back[i].z);
     glNormal3f(-1.0,0.0,0.0);
@@ -161,7 +158,8 @@ void load_texture(char *filename)
 	texture_bytes = (unsigned char *)calloc(3,im_size);
 	fread(texture_bytes,3,im_size,fptr);
 	fclose(fptr);
-	
+	printf("%d %d %d\n",im_width,im_height,im_size);
+	//printf("%s",texture_bytes);
 	glBindTexture(GL_TEXTURE_2D,1);
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,im_width,im_height,0,GL_RGB,GL_UNSIGNED_BYTE,texture_bytes);
 	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
