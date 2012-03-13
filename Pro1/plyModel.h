@@ -124,10 +124,8 @@ int plyModel::Load(const char* filename)
             int triangle_index = 0;
 			int normal_index = 0;
 			char buffer[1000];
- 
- 
+			
 			fgets(buffer,300,file);			// ply
- 
  
 			// READ HEADER
 			// -----------------
@@ -140,7 +138,6 @@ int plyModel::Load(const char* filename)
 			strcpy(buffer, buffer+strlen("element vertex"));
 			sscanf(buffer,"%i", &this->TotalConnectedPoints);
  
- 
 			// Find number of vertexes
 			fseek(file,0,SEEK_SET);
 			while (  strncmp( "element face", buffer,strlen("element face")) != 0  )
@@ -149,7 +146,6 @@ int plyModel::Load(const char* filename)
 			}
 			strcpy(buffer, buffer+strlen("element face"));
 			sscanf(buffer,"%i", &this->TotalFaces);
- 
  
 			// go to end_header
 			while (  strncmp( "end_header", buffer,strlen("end_header")) != 0  )
@@ -246,20 +242,16 @@ void plyModel::Smooth()
 		smooth[3*j] += Normals[3*i];
 		smooth[3*j+1] += Normals[3*i+1];
 		smooth[3*j+2] += Normals[3*i+2];
-		//printf("%f\t%f\t%f\n",smooth[j],smooth[j+1],smooth[j+2]);
+		
 	}
-	//~ for(int i =0;i<3*TotalConnectedPoints;i+=3)
-		//~ printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
 	for(int i = 0 ;i < 3*TotalConnectedPoints; i+=3)
 	{
-		//printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
 		float val = sqrt( smooth[i]*smooth[i] + smooth[i+1]*smooth[i+1] + smooth[i+2]*smooth[i+2] );
 		if(val!=0){
 		smooth[i] = smooth[i]/val;
 		smooth[i+1] = smooth[i+1]/val;
 		smooth[i+2] = smooth[i+2]/val;
 		}
-		//printf("%f\t%f\t%f\n",smooth[i],smooth[i+1],smooth[i+2]);
 	}
 	for(int i = 0 ;i < 3*TotalFaces; i++)
 	{
@@ -270,7 +262,6 @@ void plyModel::Smooth()
 	}
 
 	printf("%f\t%f\t%f\n",Normals[0],Normals[1],Normals[2]);
-	//printf("%f\t%f\t%f\n",smooth[21216*3],smooth[21216*3+1],smooth[21216*3+2]);
 	free(smooth);
 }
  

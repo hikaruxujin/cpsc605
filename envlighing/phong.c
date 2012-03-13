@@ -89,7 +89,7 @@ void renderScene(void)
 	glutSolidTorus(0.4,0.8,128,128);
 	glPopMatrix();
 	glutSwapBuffers();
-	sleep(10);
+	//~ sleep(10);
 }
 
 GLuint set_shaders()
