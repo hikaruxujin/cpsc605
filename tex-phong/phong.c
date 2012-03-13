@@ -123,7 +123,7 @@ void load_texture(char *filename)
 	parse = strtok(buf," \t");
 	im_width = atoi(parse);
 	
-	parse = strtok(buf," \n");
+	parse = strtok(NULL," \n");
 	im_height = atoi(parse);
 	
 	fgets(buf,512,fptr);

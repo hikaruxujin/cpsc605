@@ -57,7 +57,8 @@ void draw_stuff(){
     };
 
     glClearColor(0.35,0.35,0.35,0.0);
-    float mytexcoords[4][2] = {{0.0,0.0},{0.0,1.0},{1.0,1.0},{1.0,0.0}};
+    float t = 1.0;
+    float mytexcoords[4][2] = {{0.0,0.0},{0.0,t},{t,t},{t,0.0}};
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glShadeModel(GL_SMOOTH);
 
@@ -144,14 +145,14 @@ void load_texture(char *filename)
 	do{
 		fgets(buf,512,fptr);
 	} while(buf[0] == '#');
-	parse = strtok(buf,"\t");
+	parse = strtok(buf," \t"); 
 	im_width = atoi(parse);
 	
-	parse = strtok(buf,"\n");
+	parse = strtok(NULL," \n");
 	im_height = atoi(parse);
 	
 	fgets(buf,512,fptr);
-	parse = strtok(buf,"\n");
+	parse = strtok(buf," \n");
 	max_color = atoi(parse);
 	
 	im_size = im_width*im_height;
@@ -162,6 +163,7 @@ void load_texture(char *filename)
 	//printf("%s",texture_bytes);
 	glBindTexture(GL_TEXTURE_2D,1);
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,im_width,im_height,0,GL_RGB,GL_UNSIGNED_BYTE,texture_bytes);
+
 	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
